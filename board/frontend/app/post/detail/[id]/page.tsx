@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 type Comment = {
   commentId: number;
@@ -40,23 +41,23 @@ export default function PostDetail() {
     const [loading, setLoading] = useState(true);
 
     // 클라이언트에서 쿠키 값을 확인
-  const [token, setToken] = useState<string | null>(null);
+    const [token, setToken] = useState<string | null>(null);
 
-  useEffect(() => {
-    const getToken = () => {
-      const cookies = document.cookie.split("; ");
-      const tokenCookie = cookies.find((row) => row.startsWith("token="));
-      setToken(tokenCookie ? tokenCookie.split("=")[1] : null);
-    };
+    useEffect(() => {
+        const getToken = () => {
+        const cookies = document.cookie.split("; ");
+        const tokenCookie = cookies.find((row) => row.startsWith("token="));
+        setToken(tokenCookie ? tokenCookie.split("=")[1] : null);
+        };
 
-    getToken();
+        getToken();
 
-    // 로그인/로그아웃 후 쿠키가 변경되면 새로고침 없이 UI 반영
-    const observer = new MutationObserver(getToken);
-    observer.observe(document, { subtree: true, childList: true });
+        // 로그인/로그아웃 후 쿠키가 변경되면 새로고침 없이 UI 반영
+        const observer = new MutationObserver(getToken);
+        observer.observe(document, { subtree: true, childList: true });
 
-    return () => observer.disconnect();
-  }, []);
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
     const fetchData = async () => {
@@ -97,7 +98,7 @@ export default function PostDetail() {
             .split("; ")
             .find((row) => row.startsWith("token="))
             ?.split("=")[1];
-
+    
         if (token) {
             fetch("http://localhost:8080/api/siteuser/me", {
                 method: "GET",
@@ -110,12 +111,14 @@ export default function PostDetail() {
                 if (data.username) {
                     setUsername(data.username);
                 } else {
-                    setErrorMessage("User not found");
+                    setUsername(""); // 로그아웃 시 빈 문자열로 설정
                 }
             })
-            .catch(() => setErrorMessage("Failed to fetch user"));
+            .catch(() => setUsername(""));
+        } else {
+            setUsername(""); // 토큰이 없으면 로그아웃 상태로 변경
         }
-    }, []);
+    }, [token]); // token이 변할 때마다 실행
 
     interface FormData {
         content: string;
@@ -157,12 +160,19 @@ export default function PostDetail() {
             <div className="card-body">
                 <div className="card-text" style={{ whiteSpace: "pre-line" }}>{data.content}</div>
                 <div className="d-flex justify-content-end">
-                <div className="badge bg-light text-dark p-2 text-start">
-                    <div className="mb-2">
-                    <span>{data.siteUserName}</span>
+                    <div className="badge bg-light text-dark p-2 text-start">
+                        <div className="mb-2">
+                            <span>{data.siteUserName}</span>
+                        </div>
+                        <div>{formatDate(data.createdDate)}</div>
                     </div>
-                    <div>{formatDate(data.createdDate)}</div>
                 </div>
+                <div className="my-3">
+                    {data.siteUserName === username && (
+                        <Link href={`/post/modify/${id}`} className="btn btn-sm btn-outline-secondary">
+                            수정
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>
@@ -186,7 +196,7 @@ export default function PostDetail() {
         <form onSubmit={handleSubmit(onSubmit)} className="my-3">
             <textarea rows={10} className="form-control" {...register("content")} disabled={!token} />
             {errors.content && <div className="text-danger">{errors.content.message}</div>}
-            <button type="submit" className={`btn btn-primary ${!token ? "disabled" : ""}`} aria-disabled={!token}>댓글 등록</button>
+            <button type="submit" className={`btn btn-primary my-2 ${!token ? "disabled" : ""}`} aria-disabled={!token}>댓글 등록</button>
         </form>
     </div>
   );
