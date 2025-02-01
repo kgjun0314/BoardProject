@@ -4,13 +4,14 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 type Comment = {
   commentId: number;
   content: string;
   createdDate: string;
+  modifiedDate: string;
   siteUserName: string;
 };
 
@@ -39,6 +40,7 @@ export default function PostDetail() {
     const { id } = useParams();
     const [data, setData] = useState<PostDetailData | null>(null);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     // 클라이언트에서 쿠키 값을 확인
     const [token, setToken] = useState<string | null>(null);
@@ -150,6 +152,48 @@ export default function PostDetail() {
         }
     };
 
+    const handleDeletePost = async () => {
+        if (!window.confirm("정말로 삭제하시겠습니까?")) return;
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/post/delete/${id}`, {
+                method: "DELETE",
+            });
+
+            if (!response.ok) {
+                throw new Error("게시글 삭제에 실패했습니다.");
+            }
+
+            router.push("/"); // 삭제 후 루트 페이지로 이동
+        } catch (error) {
+            console.error(error);
+            alert("삭제 중 오류가 발생했습니다.");
+        }
+    };
+
+    interface parameter {
+        commentId: number;
+    }
+
+    const handleDeleteComment = async (param: parameter) => {
+        if (!window.confirm("정말로 삭제하시겠습니까?")) return;
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/comment/delete/${param.commentId}`, {
+                method: "DELETE",
+            });
+
+            if (!response.ok) {
+                throw new Error("댓글 삭제에 실패했습니다.");
+            }
+
+            window.location.reload(); // 페이지 강제 새로고침
+        } catch (error) {
+            console.error(error);
+            alert("삭제 중 오류가 발생했습니다.");
+        }
+    };
+
     if (loading) return <div>Loading...</div>;
     if (!data) return <div>게시글을 불러오는 데 실패했습니다.</div>;
 
@@ -160,6 +204,12 @@ export default function PostDetail() {
             <div className="card-body">
                 <div className="card-text" style={{ whiteSpace: "pre-line" }}>{data.content}</div>
                 <div className="d-flex justify-content-end">
+                    {data.modifiedDate && (
+                        <div className="badge bg-light text-dark p-2 text-start mx-3">
+                            <div className="mb-2">modified at</div>
+                            <div>{formatDate(data.modifiedDate)}</div>
+                        </div>
+                    )}
                     <div className="badge bg-light text-dark p-2 text-start">
                         <div className="mb-2">
                             <span>{data.siteUserName}</span>
@@ -169,9 +219,15 @@ export default function PostDetail() {
                 </div>
                 <div className="my-3">
                     {data.siteUserName === username && (
-                        <Link href={`/post/modify/${id}`} className="btn btn-sm btn-outline-secondary">
-                            수정
-                        </Link>
+                        <div>
+                            <Link href={`/post/modify/${id}`} className="btn btn-sm btn-outline-secondary">
+                                수정
+                            </Link>
+                            <> </>
+                            <button onClick={handleDeletePost} className="btn btn-sm btn-outline-danger">
+                                삭제
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
@@ -182,6 +238,12 @@ export default function PostDetail() {
                 <div className="card-body">
                     <div className="card-text" style={{ whiteSpace: "pre-line" }}>{comment.content}</div>
                     <div className="d-flex justify-content-end">
+                        {comment.modifiedDate && (
+                            <div className="badge bg-light text-dark p-2 text-start mx-3">
+                                <div className="mb-2">modified at</div>
+                                <div>{formatDate(comment.modifiedDate)}</div>
+                            </div>
+                        )}
                         <div className="badge bg-light text-dark p-2 text-start">
                             <div className="mb-2">
                                 <span>{comment.siteUserName}</span>
@@ -189,6 +251,19 @@ export default function PostDetail() {
                             <div>{formatDate(comment.createdDate)}</div>
                         </div>
                     </div>
+                    <div className="my-3">
+                    {comment.siteUserName === username && (
+                        <div>
+                            <Link href={`/comment/modify/${comment.commentId}`} className="btn btn-sm btn-outline-secondary">
+                                수정
+                            </Link>
+                            <> </>
+                            <button onClick={() => handleDeleteComment({ commentId: comment.commentId })}  className="btn btn-sm btn-outline-danger">
+                                삭제
+                            </button>
+                        </div>
+                    )}
+                </div>
                 </div>
             </div>
         ))}
