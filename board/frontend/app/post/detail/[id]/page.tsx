@@ -11,7 +11,7 @@ type Comment = {
   commentId: number;
   content: string;
   createdDate: string;
-  modifiedDate: string;
+  modifiedDate: string | null;
   siteUserName: string;
 };
 
@@ -20,7 +20,7 @@ type PostDetailData = {
   title: string;
   content: string;
   createdDate: string;
-  modifiedDate: string;
+  modifiedDate: string | null;
   commentList: Comment[];
   siteUserName: string;
 };
@@ -34,6 +34,7 @@ export default function PostDetail() {
         register,
         handleSubmit,
         formState: { errors },
+        reset
     } = useForm({
         resolver: yupResolver(schema),
     });
@@ -126,23 +127,43 @@ export default function PostDetail() {
         content: string;
     }
 
-    const onSubmit = async (data: FormData) => {
+    const onSubmit = async (formData: FormData) => {
         try {
             const response = await fetch(`http://localhost:8080/api/comment/create/${id}`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`, // 토큰 추가
+                },
                 body: JSON.stringify({
-                    content: data.content,
-                    username: username,  // 사용자 이름 추가
+                    content: formData.content,
+                    username: username,
                 }),
             });
-
+    
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.message);
             }
+    
+            // 새 댓글 객체 생성
+            const newComment: Comment = {
+                commentId: Date.now(), // 임시 ID (실제 ID는 새로고침 후 반영됨)
+                content: formData.content,
+                createdDate: new Date().toISOString(), // 현재 시간
+                modifiedDate: null,
+                siteUserName: username,
+            };
+    
+            // 기존 데이터에 새 댓글 추가
+            if (data) {
+                setData({
+                    ...data,
+                    commentList: [...data.commentList, newComment],
+                });
+            }
 
-            window.location.reload(); // 페이지 강제 새로고침
+            reset();
         } catch (error: unknown) {
             if (error instanceof Error) {
                 setErrorMessage(error.message);
@@ -151,6 +172,7 @@ export default function PostDetail() {
             }
         }
     };
+    
 
     const handleDeletePost = async () => {
         if (!window.confirm("정말로 삭제하시겠습니까?")) return;
