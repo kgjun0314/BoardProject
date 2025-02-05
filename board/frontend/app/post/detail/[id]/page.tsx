@@ -13,6 +13,7 @@ type Comment = {
   createdDate: string;
   modifiedDate: string | null;
   siteUserName: string;
+  likeCount: number;
 };
 
 type PostDetailData = {
@@ -23,6 +24,7 @@ type PostDetailData = {
   modifiedDate: string | null;
   commentList: Comment[];
   siteUserName: string;
+  likeCount: number;
 };
 
 const schema = yup.object().shape({
@@ -146,22 +148,10 @@ export default function PostDetail() {
                 throw new Error(error.message);
             }
     
-            // 새 댓글 객체 생성
-            const newComment: Comment = {
-                commentId: Date.now(), // 임시 ID (실제 ID는 새로고침 후 반영됨)
-                content: formData.content,
-                createdDate: new Date().toISOString(), // 현재 시간
-                modifiedDate: null,
-                siteUserName: username,
-            };
-    
-            // 기존 데이터에 새 댓글 추가
-            if (data) {
-                setData({
-                    ...data,
-                    commentList: [...data.commentList, newComment],
-                });
-            }
+            // 서버에서 새로운 댓글 목록을 가져옴
+            const res = await fetch(`http://localhost:8080/api/post/detail/${id}`);
+            const json = await res.json();
+            setData(json); // 새로운 댓글 목록으로 상태 업데이트
 
             reset();
         } catch (error: unknown) {
@@ -216,6 +206,67 @@ export default function PostDetail() {
         }
     };
 
+    const handleLikePost = async () => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/post/like/${id}`, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`, // 토큰 추가
+                },
+                body: JSON.stringify({
+                    username: username,
+                }),
+            });
+    
+            if (!response.ok) {
+                alert("이미 추천을 누르신 글 입니다.");
+                return;
+            }
+
+            const res = await fetch(`http://localhost:8080/api/post/detail/${id}`);
+            const json = await res.json();
+            setData(json); // 새로운 댓글 목록으로 상태 업데이트
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                setErrorMessage(error.message);
+            } else {
+                setErrorMessage("An unknown error occurred.");
+            }
+        }
+    };
+
+    const handleLikeComment = async (param: parameter) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/comment/like/${param.commentId}`, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`, // 토큰 추가
+                },
+                body: JSON.stringify({
+                    username: username,
+                }),
+            });
+    
+            if (!response.ok) {
+                alert("이미 추천을 누르신 댓글 입니다.");
+                return;
+            }
+
+            // 서버에서 새로운 댓글 목록을 가져옴
+            const res = await fetch(`http://localhost:8080/api/post/detail/${id}`);
+            const json = await res.json();
+            setData(json); // 새로운 댓글 목록으로 상태 업데이트
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                setErrorMessage(error.message);
+            } else {
+                setErrorMessage("An unknown error occurred.");
+            }
+        }
+    };
+
     if (loading) return <div>Loading...</div>;
     if (!data) return <div>게시글을 불러오는 데 실패했습니다.</div>;
 
@@ -239,13 +290,18 @@ export default function PostDetail() {
                         <div>{formatDate(data.createdDate)}</div>
                     </div>
                 </div>
-                <div className="my-3">
+                <div className="my-3 d-flex align-items-center">
+                    <div className="me-1">
+                        <button onClick={handleLikePost} className={`recommend btn btn-sm btn-outline-secondary ${!token ? "disabled" : ""}`} aria-disabled={!token}>
+                            추천
+                            <span className="badge rounded-pill bg-success ms-1">{data.likeCount}</span>
+                        </button>
+                    </div>
                     {data.siteUserName === username && (
                         <div>
-                            <Link href={`/post/modify/${id}`} className="btn btn-sm btn-outline-secondary">
+                            <Link href={`/post/modify/${id}`} className="btn btn-sm btn-outline-secondary me-1">
                                 수정
                             </Link>
-                            <> </>
                             <button onClick={handleDeletePost} className="btn btn-sm btn-outline-danger">
                                 삭제
                             </button>
@@ -273,14 +329,19 @@ export default function PostDetail() {
                             <div>{formatDate(comment.createdDate)}</div>
                         </div>
                     </div>
-                    <div className="my-3">
+                    <div className="my-3 d-flex align-items-center">
+                        <div className="me-1">
+                            <button onClick={() => handleLikeComment({ commentId: comment.commentId })} className={`recommend btn btn-sm btn-outline-secondary ${!token ? "disabled" : ""}`} aria-disabled={!token}>
+                                추천
+                                <span className="badge rounded-pill bg-success ms-1">{comment.likeCount}</span>
+                            </button>
+                        </div>
                     {comment.siteUserName === username && (
                         <div>
-                            <Link href={`/comment/modify/${comment.commentId}`} className="btn btn-sm btn-outline-secondary">
+                            <Link href={`/comment/modify/${comment.commentId}`} className="btn btn-sm btn-outline-secondary me-1">
                                 수정
                             </Link>
-                            <> </>
-                            <button onClick={() => handleDeleteComment({ commentId: comment.commentId })}  className="btn btn-sm btn-outline-danger">
+                            <button onClick={() => handleDeleteComment({ commentId: comment.commentId })} className="btn btn-sm btn-outline-danger">
                                 삭제
                             </button>
                         </div>

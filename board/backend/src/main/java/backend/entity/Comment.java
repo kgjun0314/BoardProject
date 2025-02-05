@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -23,4 +26,7 @@ public class Comment extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "siteuser_id")
     private SiteUser siteUser;
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
+    private List<LikeToComment> likeToCommentList = new ArrayList<>();
 }

@@ -1,9 +1,6 @@
 package backend.controller;
 
-import backend.entity.PostPageResponseDto;
-import backend.entity.PostRequestDto;
-import backend.entity.PostResponseDto;
-import backend.entity.SiteUser;
+import backend.entity.*;
 import backend.service.PostService;
 import backend.service.SiteUserService;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +21,17 @@ public class PostApiController {
 
     @PostMapping("/create")
     public PostRequestDto createPost(@RequestBody PostRequestDto postRequestDto) {
-        SiteUser siteUser = siteUserService.getSiteUserEntityByUsername(postRequestDto.getUsername());
+        SiteUser siteUser = siteUserService.getSiteUserByUsername(postRequestDto.getUsername());
         postService.createPost(postRequestDto, siteUser);
         return postRequestDto;
+    }
+
+    @PostMapping("/like/{id}")
+    public LikeRequestDto likePost(@PathVariable Long id, @RequestBody LikeRequestDto likeRequestDto) {
+        Post post = postService.getPost(id);
+        SiteUser siteUser = siteUserService.getSiteUserByUsername(likeRequestDto.getUsername());
+        postService.likePost(post, siteUser);
+        return likeRequestDto;
     }
 
     @GetMapping("/detail/{id}")

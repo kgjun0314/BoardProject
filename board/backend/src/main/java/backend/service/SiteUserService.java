@@ -44,7 +44,16 @@ public class SiteUserService implements UserDetailsService {
         siteUserRepository.save(siteUser);
     }
 
-    public SiteUser getSiteUserEntityByUsername(String username) {
+    public SiteUser getSiteUserById(Long id) {
+        Optional<SiteUser> siteUser = siteUserRepository.findById(id);
+        if(siteUser.isPresent()) {
+            return siteUser.get();
+        } else {
+            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");
+        }
+    }
+
+    public SiteUser getSiteUserByUsername(String username) {
         Optional<SiteUser> siteUser = siteUserRepository.findByUsername(username);
         if(siteUser.isPresent()) {
             return siteUser.get();

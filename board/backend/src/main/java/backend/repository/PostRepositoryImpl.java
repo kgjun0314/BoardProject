@@ -32,7 +32,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         comment.createdDate,
                         comment.modifiedDate,
                         comment.siteUser.username,
-                        Expressions.constant(id)
+                        Expressions.constant(id),
+                        comment.likeToCommentList.size()
                 ))
                 .from(comment)
                 .where(comment.post.id.eq(id))
@@ -46,7 +47,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         post.createdDate,
                         post.modifiedDate,
                         Expressions.constant(comments),
-                        post.siteUser.username
+                        post.siteUser.username,
+                        post.likeToPostList.size()
                 ))
                 .from(post)
                 .where(idEq(id))

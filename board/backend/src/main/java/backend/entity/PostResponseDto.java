@@ -15,13 +15,14 @@ public class PostResponseDto {
     private LocalDateTime modifiedDate;
     private List<CommentResponseDto> commentList;
     private String siteUserName;
+    private Integer likeCount;
 
     public PostResponseDto() {
 
     }
 
     @QueryProjection
-    public PostResponseDto(Long postId, String title, String content, LocalDateTime createdDate, LocalDateTime modifiedDate, List<CommentResponseDto> commentList, String siteUserName) {
+    public PostResponseDto(Long postId, String title, String content, LocalDateTime createdDate, LocalDateTime modifiedDate, List<CommentResponseDto> commentList, String siteUserName, Integer likeCount) {
         this.postId = postId;
         this.title = title;
         this.content = content;
@@ -29,5 +30,6 @@ public class PostResponseDto {
         this.modifiedDate = modifiedDate;
         this.commentList = commentList;
         this.siteUserName = siteUserName;
+        this.likeCount = likeCount;
     }
 }

@@ -29,4 +29,10 @@ public class SiteUser {
 
     @OneToMany(mappedBy = "siteUser", cascade = CascadeType.ALL)
     private List<Comment> commentList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "siteUser", cascade = CascadeType.ALL)
+    private List<LikeToPost> likeToPostList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "siteUser", cascade = CascadeType.ALL)
+    private List<LikeToComment> likeToCommentList = new ArrayList<>();
 }

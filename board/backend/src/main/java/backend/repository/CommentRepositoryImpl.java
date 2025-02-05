@@ -24,7 +24,8 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom{
                   comment.createdDate,
                   comment.modifiedDate,
                   comment.siteUser.username,
-                  comment.post.id
+                  comment.post.id,
+                  comment.likeToCommentList.size()
                 ))
                 .from(comment)
                 .where(idEq(id))

@@ -20,7 +20,7 @@ public class SiteUserApiController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody SiteUserRequestDto siteUserRequestDto) {
-        SiteUser siteUser = siteUserService.getSiteUserEntityByUsername(siteUserRequestDto.getUsername());
+        SiteUser siteUser = siteUserService.getSiteUserByUsername(siteUserRequestDto.getUsername());
 
         if(!passwordEncoder.matches(siteUserRequestDto.getPassword(), siteUser.getPassword())) {
             return ResponseEntity.status(401).body("Invalid username or password");

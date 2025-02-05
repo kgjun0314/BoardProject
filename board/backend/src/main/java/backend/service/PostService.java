@@ -1,7 +1,9 @@
 package backend.service;
 
 import backend.entity.*;
+import backend.repository.LikeToPostRepository;
 import backend.repository.PostRepository;
+import backend.repository.SiteUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final LikeToPostRepository likeToPostRepository;
 
     @Transactional
     public void createPost(PostRequestDto postRequestDto, SiteUser siteUser) {
@@ -26,7 +29,15 @@ public class PostService {
         postRepository.save(post);
     }
 
-    public Post getPostEntity(Long id) {
+    @Transactional
+    public void likePost(Post post, SiteUser siteUser) {
+        LikeToPost likeToPost = new LikeToPost();
+        likeToPost.setPost(post);
+        likeToPost.setSiteUser(siteUser);
+        likeToPostRepository.save(likeToPost);
+    }
+
+    public Post getPost(Long id) {
         return postRepository.findById(id).orElse(null);
     }
 
@@ -40,7 +51,7 @@ public class PostService {
 
     @Transactional
     public void modifyPost(PostRequestDto postRequestDto, Long id) {
-        Post post = getPostEntity(id);
+        Post post = getPost(id);
         post.setTitle(postRequestDto.getTitle());
         post.setContent(postRequestDto.getContent());
         post.setModifiedDate(LocalDateTime.now());

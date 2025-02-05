@@ -17,10 +17,18 @@ public class CommentApiController {
 
     @PostMapping("/create/{id}")
     public CommentRequestDto createComment(@PathVariable Long id, @RequestBody CommentRequestDto commentRequestDto) {
-        Post post = postService.getPostEntity(id);
-        SiteUser siteUser = siteUserService.getSiteUserEntityByUsername(commentRequestDto.getUsername());
+        Post post = postService.getPost(id);
+        SiteUser siteUser = siteUserService.getSiteUserByUsername(commentRequestDto.getUsername());
         commentService.createComment(post, siteUser, commentRequestDto);
         return commentRequestDto;
+    }
+
+    @PostMapping("/like/{id}")
+    public LikeRequestDto likeComment(@PathVariable Long id, @RequestBody LikeRequestDto likeRequestDto) {
+        Comment comment = commentService.getComment(id);
+        SiteUser siteUser = siteUserService.getSiteUserByUsername(likeRequestDto.getUsername());
+        commentService.likeComment(comment, siteUser);
+        return likeRequestDto;
     }
 
     @GetMapping("/detail/{id}")

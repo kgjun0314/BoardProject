@@ -28,4 +28,7 @@ public class Post extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "siteuser_id")
     private SiteUser siteUser;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<LikeToPost> likeToPostList = new ArrayList<>();
 }

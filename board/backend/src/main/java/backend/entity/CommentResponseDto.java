@@ -13,18 +13,20 @@ public class CommentResponseDto {
     private LocalDateTime modifiedDate;
     private String siteUserName;
     private Long postId;
+    private Integer likeCount;
 
     public CommentResponseDto() {
 
     }
 
     @QueryProjection
-    public CommentResponseDto(Long commentId, String content, LocalDateTime createdDate, LocalDateTime modifiedDate, String siteUserName, Long postId) {
+    public CommentResponseDto(Long commentId, String content, LocalDateTime createdDate, LocalDateTime modifiedDate, String siteUserName, Long postId, Integer likeCount) {
         this.commentId = commentId;
         this.content = content;
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
         this.siteUserName = siteUserName;
         this.postId = postId;
+        this.likeCount = likeCount;
     }
 }
