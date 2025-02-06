@@ -62,7 +62,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
     }
 
     @Override
-    public Page<PostPageResponseDto> getPostDtoList(Pageable pageable){
+    public Page<PostPageResponseDto> getPostDtoList(Pageable pageable, String query){
         QueryResults<PostPageResponseDto> queryResults = queryFactory
                 .select(new QPostPageResponseDto(
                         post.id.as("postId"),
@@ -72,6 +72,13 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         post.siteUser.username
                 ))
                 .from(post)
+                .where(
+                        post.title.like("%"+query+"%").or(
+                                post.content.like("%"+query+"%").or(
+                                        post.siteUser.username.like("%"+query+"%")
+                                )
+                        )
+                )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(post.createdDate.desc())

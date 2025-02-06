@@ -45,8 +45,8 @@ public class PostService {
         return postRepository.getPostDto(id);
     }
 
-    public Page<PostPageResponseDto> getPostDtoList(Pageable pageable) {
-        return postRepository.getPostDtoList(pageable);
+    public Page<PostPageResponseDto> getPostDtoList(Pageable pageable, String query) {
+        return postRepository.getPostDtoList(pageable, query);
     }
 
     @Transactional

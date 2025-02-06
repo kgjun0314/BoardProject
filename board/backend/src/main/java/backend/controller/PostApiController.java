@@ -40,9 +40,9 @@ public class PostApiController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<Map<String, Object>> getPostDtoList(@RequestParam(value = "page", defaultValue = "0") int page) {
+    public ResponseEntity<Map<String, Object>> getPostDtoList(@RequestParam(value = "query", defaultValue = "") String query, @RequestParam(value = "page", defaultValue = "0") int page) {
         PageRequest pageRequest = PageRequest.of(page, 10);
-        Page<PostPageResponseDto> postPage = postService.getPostDtoList(pageRequest);
+        Page<PostPageResponseDto> postPage = postService.getPostDtoList(pageRequest, query);
 
         Map<String, Object> response = new HashMap<>();
         response.put("content", postPage.getContent());

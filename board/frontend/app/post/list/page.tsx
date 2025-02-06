@@ -2,10 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function PostList() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const query = searchParams.get("query") || "";
+  const [searchInput, setSearchInput] = useState(searchParams.get("query") || "");
   const page = parseInt(searchParams.get("page") || "0", 10);
   const [data, setData] = useState<{ content: { postId: number; title: string; createdDate: string; commentListSize: number; siteUserName: string }[]; totalPages: number } | null>(null);
 
@@ -30,7 +33,7 @@ export default function PostList() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch(`http://localhost:8080/api/post/list?page=${page}`, {
+      const res = await fetch(`http://localhost:8080/api/post/list?query=${query}&page=${page}`, {
         cache: "no-store",
       });
       const json = await res.json();
@@ -38,7 +41,17 @@ export default function PostList() {
     };
 
     fetchData();
-  }, [page]);
+  }, [query, page]);
+
+  const handleSearch = () => {
+    router.push(`?query=${encodeURIComponent(searchInput)}&page=0`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -65,6 +78,28 @@ export default function PostList() {
 
   return (
     <div className="container my-3">
+      <div className="row my-3">
+        <div className="col-6">
+          <Link href={`/post/create`} className={`btn btn-primary ${!token ? "disabled" : ""}`} aria-disabled={!token}>
+            글 작성하기
+          </Link>
+        </div>
+        <div className="col-6">
+          <div className="input-group">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="검색어를 입력하세요"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <button className="btn btn-outline-secondary" type="button" onClick={handleSearch}>
+              찾기
+            </button>
+          </div>
+        </div>
+      </div>
       <table className="table">
         <thead className="table-dark">
           <tr className="text-center">
@@ -122,9 +157,6 @@ export default function PostList() {
           </li>
         </ul>
       </div>
-      <Link href={`/post/create`} className={`btn btn-primary ${!token ? "disabled" : ""}`} aria-disabled={!token}>
-        글 작성하기
-      </Link>
     </div>
   );
 }
