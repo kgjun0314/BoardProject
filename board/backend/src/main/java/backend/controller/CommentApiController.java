@@ -36,7 +36,7 @@ public class CommentApiController {
         return this.commentService.getCommentDto(id);
     }
 
-    @PatchMapping("/modify/{id}")
+    @PutMapping("/modify/{id}")
     public CommentRequestDto modifyComment(@RequestBody CommentRequestDto commentRequestDto, @PathVariable Long id) {
         commentService.modifyComment(commentRequestDto, id);
         return commentRequestDto;

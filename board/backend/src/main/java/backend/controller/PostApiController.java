@@ -54,7 +54,7 @@ public class PostApiController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/modify/{id}")
+    @PutMapping("/modify/{id}")
     public PostRequestDto modifyPost(@RequestBody PostRequestDto postRequestDto, @PathVariable Long id) {
         postService.modifyPost(postRequestDto, id);
         return postRequestDto;
